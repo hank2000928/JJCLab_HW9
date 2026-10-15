@@ -59,4 +59,32 @@ T	|Stopped / Traced	|行程已暫停，可能由工作控制訊號或除錯追�
 1-1-6	|%CPU 高是否一定是問題？應如何判斷？	|CPU 使用率應配合行程用途、執行時間及系統整體狀態判斷。
 1-1-7	|發現 STAT=Z（zombie）時，下一步應查什麼？	|此時應優先查詢 PPID（Parent Process ID），確認負責回收該 Zombie 的父行程。
 
-## 1-1. ps 選項與欄位
+## 1-2. 實作：找出 sshd 相關行程
+### 1-2-1
+於虛擬機執行:  
+ps aux  
+ps -ef  
+pgrep sshd  
+pgrep -l sshd  
+pgrep -u root sshd  
+整理後，得到:
+
+欄位|	實際結果|	說明
+---|---|---
+USER	|root	SSH |服務由 root 帳號執行。
+PID	|1847	sshd| 行程的唯一識別碼。
+STAT	|Ss|	行程處於可中斷睡眠，而且是 Session Leader。
+COMMAND|	sshd: /usr/sbin/sshd -D [listener] ...	|SSH 伺服器正在監聽新的 SSH 連線。
+
+### 1-2-2
+<img width="851" height="186" alt="image" src="https://github.com/user-attachments/assets/756dce51-580b-4298-872d-c9a1f1172cc5" />
+顯示結果一致
+
+### 1-2-3
+工具|	觀察方式|	適用情況
+---|---|---
+ps	|單次快照	|查詢目前有哪些行程、PID、PPID、執行狀態及資源使用資訊。
+top	|即時互動監控	|持續觀察系統 CPU、記憶體使用量，以及目前最消耗資源的行程。
+pidstat	|定時採樣與統計|	追蹤特定 PID 的 CPU、記憶體或 I/O 使用情況，適合定量分析或儲存紀錄。
+
+ps 適合快速取得某個時間點的行程資訊與查詢特定 PID；top 適合即時、互動式地觀察整體系統與高負載行程；pidstat 則適合對特定行程進行定時採樣，分析 CPU、記憶體或 I/O 使用率隨時間的變化。  
