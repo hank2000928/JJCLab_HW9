@@ -154,3 +154,41 @@ pgrep|	5922 sleep 600	|PID 一致
 kill -TERM "$TEST_PID"	|顯示 Terminated|	成功
 ps -p "$TEST_PID"|	只有表頭，沒有行程	|已結束
 wait、jobs	|沒有剩餘背景工作	|完成
+
+### 2-2-3 （可另開一個 sleep）比較 killall sleep 與 kill PID 的影響範圍  
+確認目前沒有其他 sleep 行程，再建立兩個 sleep 測試行程  
+<img width="846" height="326" alt="image" src="https://github.com/user-attachments/assets/b69612b5-a686-4ca5-b1b5-1c1bd324ecf6" />
+
+只終止一個行程  
+
+<img width="848" height="125" alt="image" src="https://github.com/user-attachments/assets/0de9b4de-9548-45dc-a9d9-633bf269580e" />
+
+再使用 killall 終止剩下的 sleep  
+
+<img width="840" height="162" alt="image" src="https://github.com/user-attachments/assets/8c903292-b697-41f4-9675-7b8e3007d693" />
+
+### 2-2-4 寫出 pkill -f "python my_script.py" 適用的情境
+
+pkill -f "python my_script.py" 適用於同時執行多個 Python 程式，但只希望終止其中一個指定腳本的情境。
+由於多個 Python 行程可能具有相同的行程名稱，使用 killall python 可能誤終止其他程式。pkill -f 能根據完整命令列進行匹配，因此可以針對指定的 Python 腳本送出終止訊號。
+實際執行前應先使用 pgrep -af 確認匹配對象，避免影響其他行程。
+
+## 2-3. nice / renice
+### 2-3-1 解釋 nice 值與優先級的關係
+Linux 使用 nice 值調整一般行程的 CPU 排程優先級，範圍通常為 -20～+19，預設值為 0。
+nice 值越小，表示行程的相對 CPU 排程優先級越高；nice 值越大，則優先級越低，較願意將 CPU 資源讓給其他行程。
+因此，nice=-20 代表最高的相對優先級，而 nice=19 代表最低的相對優先級。
+### 2-3-2 大量編譯、批次工作通常應提高還是降低 nice？為什麼？
+大量編譯或一般非緊急批次工作，通常適合提高 nice 數值，藉此降低 CPU 排程優先級。
+這樣可讓互動式操作、系統服務或其他重要工作更容易獲得 CPU 資源，避免長時間批次運算影響系統回應速度。
+但如果是具有嚴格完成期限的重要工作，仍應根據實際需求和系統資源政策調整，不一定所有批次工作都要降低優先級。
+### 2-3-3 寫出對 PID 12345 將 nice 改為 15 的指令
+renice 15 -p 12345
+語法	|意義
+---|---
+renice|	修改現有行程的 nice 值
+15|	設定新的 nice 值
+-p	|指定行程 PID
+12345|	要修改的目標 PID
+### 2-3-4
+長期將關鍵行程的 nice 值設定為很大的負值，會使該行程在 CPU 資源競爭時獲得較高的排程優先級，可能壓縮其他行程的 CPU 執行時間，造成系統回應變慢、背景服務延遲或整體資源分配不均。此外，較高的 CPU 排程優先級不代表一定能提升效能，因為程式也可能受到記憶體、磁碟 I/O 或網路等因素限制。因此應依實際工作需求調整 nice 值，避免長期使用過高的排程優先級。
