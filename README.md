@@ -142,6 +142,7 @@ pkill -f PATTERN	|依完整命令列進行正規表示式匹配|	匹配包含指
 ### 2-2-1 ~ 2-2-2
 <img width="849" height="382" alt="image" src="https://github.com/user-attachments/assets/ebd5e150-6526-40aa-95c2-f61187213130" />
 結果:  
+
 檢查項目	|實際結果|	判定
 ---|---|---
 kill -l TERM|	15	|正確
