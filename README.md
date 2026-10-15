@@ -220,9 +220,11 @@ FD	|名稱	|用途
 0	|stdin	|標準輸入
 1	|stdout	|標準輸出
 2	|stderr	|標準錯誤輸出
+
 ### 3-1-2 無法 umount、埠被占用、刪檔後空間未釋放，為什麼常靠 lsof？	
 lsof 可以找出正在使用特定檔案、目錄或網路 socket 的行程及 PID。因此，當檔案系統無法卸載、網路埠遭占用，或檔案刪除後空間仍未釋放時，可以透過 lsof 找出資源占用者，再採取適當的處理方式。
 ### 3-1-3 欄位 COMMAND／PID／USER／FD／TYPE／NAME 各看什麼？
+
 欄位	|詳細說明
 ---|---
 COMMAND|	開啟資源的行程名稱
@@ -232,6 +234,7 @@ FD	|檔案描述符或特殊資源標記
 TYPE	|檔案或資源類型
 NAME	|資源名稱、路徑或網路連線資訊
 ### FD 常見值 cwd、txt、mem、0u／1w／2r 大致代表什麼？
+
 FD	|意義
 ---|---
 cwd	|Current Working Directory，目前工作目錄
