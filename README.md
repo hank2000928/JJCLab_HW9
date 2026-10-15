@@ -241,7 +241,7 @@ USER	|行程所屬使用者
 FD	|檔案描述符或特殊資源標記
 TYPE	|檔案或資源類型
 NAME	|資源名稱、路徑或網路連線資訊
-### FD 常見值 cwd、txt、mem、0u／1w／2r 大致代表什麼？
+### 3-1-4 FD 常見值 cwd、txt、mem、0u／1w／2r 大致代表什麼？
 
 FD	|意義
 ---|---
@@ -251,3 +251,16 @@ mem	|Memory-mapped file，記憶體映射檔案
 0u	|FD 0，以讀寫模式開啟
 1w	|FD 1，以寫入模式開啟
 2r	|FD 2，以讀取模式開啟
+
+## 3-2. 常用過濾
+
+題號|	任務|	指令
+---|---|---
+3-2-1	|列出網路相關開啟資源|	sudo lsof -nP -i
+3-2-2	|查 TCP 22	|sudo lsof -nP -iTCP:22
+3-2-3	|查 UDP 53	|sudo lsof -nP -iUDP:53
+3-2-4	|只看使用者 |apache	sudo lsof -u apache
+3-2-5	|排除 root	|sudo lsof -u ^root
+3-2-6	|依命令名稱過濾 nginx	|sudo lsof -c nginx
+3-2-7	|依 PID 過濾	|sudo lsof -p 1847
+3-2-8	|遞迴查看目錄	|sudo lsof +D /var/log
