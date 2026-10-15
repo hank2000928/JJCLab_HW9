@@ -60,7 +60,7 @@ T	|Stopped / Traced	|行程已暫停，可能由工作控制訊號或除錯追�
 1-1-7	|發現 STAT=Z（zombie）時，下一步應查什麼？	|此時應優先查詢 PPID（Parent Process ID），確認負責回收該 Zombie 的父行程。
 
 ## 1-2. 實作：找出 sshd 相關行程
-### 1-2-1
+### 1-2-1 從 ps aux 找出 sshd 相關列，記錄 USER、PID、STAT、COMMAND
 於虛擬機執行:  
 ps aux  
 ps -ef  
@@ -76,11 +76,11 @@ PID	|1847	sshd| 行程的唯一識別碼。
 STAT	|Ss|	行程處於可中斷睡眠，而且是 Session Leader。
 COMMAND|	sshd: /usr/sbin/sshd -D [listener] ...	|SSH 伺服器正在監聽新的 SSH 連線。
 
-### 1-2-2
+### 1-2-2 用 pgrep -l sshd 對照 PID 是否一致
 <img width="851" height="186" alt="image" src="https://github.com/user-attachments/assets/756dce51-580b-4298-872d-c9a1f1172cc5" />
 顯示結果一致
 
-### 1-2-3
+### 1-2-3 說明何時用 ps（快照／過濾），何時改用 top／pidstat（持續觀察）
 工具|	觀察方式|	適用情況
 ---|---|---
 ps	|單次快照	|查詢目前有哪些行程、PID、PPID、執行狀態及資源使用資訊。
@@ -88,3 +88,25 @@ top	|即時互動監控	|持續觀察系統 CPU、記憶體使用量，以及目
 pidstat	|定時採樣與統計|	追蹤特定 PID 的 CPU、記憶體或 I/O 使用情況，適合定量分析或儲存紀錄。
 
 ps 適合快速取得某個時間點的行程資訊與查詢特定 PID；top 適合即時、互動式地觀察整體系統與高負載行程；pidstat 則適合對特定行程進行定時採樣，分析 CPU、記憶體或 I/O 使用率隨時間的變化。  
+
+## 1-3. pstree 看父子關係
+### 1-3-1 -p、-u、-a、-h 各做什麼？
+
+選項	|功能|	詳細說明
+-p|	Show PIDs	|在行程名稱後方顯示 PID
+-u|	Show UID transitions|	當父子行程的使用者身分不同時，標示使用者變化
+-a|	Show command-line arguments	|顯示行程啟動時的命令列參數
+-h|	Highlight|	標示目前行程及其祖先行程（視終端機是否支援反白）
+
+### 1-3-2 從輸出指出 sshd（或任一 daemon）的父行程與子行程
+
+<img width="849" height="206" alt="image" src="https://github.com/user-attachments/assets/2b6a355b-5e55-4fdb-9610-f3e36a176510" />
+用 ps 與 pstree 兩種方式交叉驗證父子關係，並且目前沒有 SSH 用戶端透過網路登入。
+
+### 1-3-3 為什麼排查時要先搞清楚「該殺父還是殺子」？
+終止父行程不一定自動終止所有子行程。實際情況取決於應用程式的訊號處理、行程群組及服務管理機制。
+因此排查時應先：
+1. 使用 ps、pgrep 找出異常行程的 PID。
+2. 使用 pstree 確認父子行程關係。
+3. 判斷各行程的功能與依賴關係，再決定是否需要終止或重新啟動。
+因此，排查行程異常時，應先確認父子關係，避免誤將負責管理多個子行程的父行程終止，導致整個服務或其他正常工作受到影響。應針對真正異常的行程採取適當措施，並考慮父行程是否會自動重新啟動子行程，以及終止後的資源清理和服務依賴問題。
