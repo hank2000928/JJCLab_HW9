@@ -110,8 +110,8 @@ ps 適合快速取得某個時間點的行程資訊與查詢特定 PID；top 適
 2. 使用 pstree 確認父子行程關係。
 3. 判斷各行程的功能與依賴關係，再決定是否需要終止或重新啟動。
 因此，排查行程異常時，應先確認父子關係，避免誤將負責管理多個子行程的父行程終止，導致整個服務或其他正常工作受到影響。應針對真正異常的行程採取適當措施，並考慮父行程是否會自動重新啟動子行程，以及終止後的資源清理和服務依賴問題。
-
-#練習 2. 訊號、優先級與工作控制
+-----------------------------------
+# 練習 2. 訊號、優先級與工作控制
 ## 2-1. kill / killall / pkill
 小題	|問題|	作答
 ---|---|---
@@ -192,3 +192,51 @@ renice|	修改現有行程的 nice 值
 12345|	要修改的目標 PID
 ### 2-3-4
 長期將關鍵行程的 nice 值設定為很大的負值，會使該行程在 CPU 資源競爭時獲得較高的排程優先級，可能壓縮其他行程的 CPU 執行時間，造成系統回應變慢、背景服務延遲或整體資源分配不均。此外，較高的 CPU 排程優先級不代表一定能提升效能，因為程式也可能受到記憶體、磁碟 I/O 或網路等因素限制。因此應依實際工作需求調整 nice 值，避免長期使用過高的排程優先級。
+
+## 2-4 工作控制實作：暫停、背景、前台、找出 PID 並結束
+### 2-4-1 查看 Job 清單：輸入什麼指令可確認剛剛被暫停的工作編號（Job ID）？
+<img width="844" height="145" alt="image" src="https://github.com/user-attachments/assets/cd54da53-1f27-436d-ae69-3a0ffeb8cdd8" />
+使用 jobs 列出目前 Shell 管理的工作，確認被 Ctrl+Z 暫停的工作編號。若要同時顯示 PID，可使用 jobs -l。
+### 2-4-2 切到背景繼續執行：工作已暫停，但希望它在背景繼續跑（方式 A 會繼續印訊息），不要佔用終端輸入。請下達什麼指令？
+<img width="847" height="124" alt="image" src="https://github.com/user-attachments/assets/220b8879-9048-44dc-ac04-a2fe8bab7854" />
+使用 bg %1 將 Job 1 從暫停狀態恢復，並放到背景繼續執行。透過 jobs 確認狀態由 Stopped 變為 Running。
+### 2-4-3 調回前景（Foreground）：訊息在終端滾動干擾操作時，請下達指令將它調回前台，再按 Ctrl+Z 暫停。
+<img width="845" height="132" alt="image" src="https://github.com/user-attachments/assets/e1d1dbc5-b719-45f4-adcb-a8678813d198" />
+使用 fg %1 將指定的背景工作移回前景，再按下 Ctrl+Z，即可將目前前景工作暫停。
+### 2-4-4 找出執行這個 while 迴圈或 sleep 的 PID
+<img width="846" height="201" alt="image" src="https://github.com/user-attachments/assets/e0d676a4-2e22-40ba-b4f2-108ca6ec28cc" />
+使用 jobs -l 或 jobs -p %1 取得目前 Shell 工作對應的 PID，再用 ps 確認行程狀態。暫停中的 sleep 通常會顯示 STAT=T。
+### 2-4-5 ~ 2-4-6
+<img width="839" height="145" alt="image" src="https://github.com/user-attachments/assets/a24b6598-5f57-4cd9-8d6d-11c486518306" />
+先用 jobs -p %1 找到 PID，再使用 kill -TERM PID 嘗試正常終止。只有在行程無法正常結束、且已確認目標正確時，才考慮 kill -9 PID。  
+使用 ps -p PID 確認行程已不存在，並使用 jobs 確認 Shell 不再保留該工作。  
+------------------------------
+# 練習 3. lsof：誰握著檔案、埠與目錄
+## 3-1. 概念
+### 3-1-1 什麼是 File Descriptor（FD）？
+File Descriptor 是 Linux Kernel 為行程提供的檔案描述符，用來識別行程已開啟的檔案、socket、pipe 等資源。每個行程有自己的 FD 表:  
+FD	|名稱	|用途
+---|---|---
+0	|stdin	|標準輸入
+1	|stdout	|標準輸出
+2	|stderr	|標準錯誤輸出
+### 3-1-2 無法 umount、埠被占用、刪檔後空間未釋放，為什麼常靠 lsof？	
+lsof 可以找出正在使用特定檔案、目錄或網路 socket 的行程及 PID。因此，當檔案系統無法卸載、網路埠遭占用，或檔案刪除後空間仍未釋放時，可以透過 lsof 找出資源占用者，再採取適當的處理方式。
+### 3-1-3 欄位 COMMAND／PID／USER／FD／TYPE／NAME 各看什麼？
+欄位	|詳細說明
+---|---
+COMMAND|	開啟資源的行程名稱
+PID	|行程識別碼
+USER	|行程所屬使用者
+FD	|檔案描述符或特殊資源標記
+TYPE	|檔案或資源類型
+NAME	|資源名稱、路徑或網路連線資訊
+### FD 常見值 cwd、txt、mem、0u／1w／2r 大致代表什麼？
+FD	|意義
+---|---
+cwd	|Current Working Directory，目前工作目錄
+txt	|程式執行檔或相關程式碼映射
+mem	|Memory-mapped file，記憶體映射檔案
+0u	|FD 0，以讀寫模式開啟
+1w	|FD 1，以寫入模式開啟
+2r	|FD 2，以讀取模式開啟
