@@ -137,3 +137,19 @@ ps 適合快速取得某個時間點的行程資訊與查詢特定 PID；top 適
 kill PID	|指定 PID|	kill 12345
 killall sleep	|依行程名稱匹配	|終止名稱為 sleep 的行程
 pkill -f PATTERN	|依完整命令列進行正規表示式匹配|	匹配包含指定參數的行程
+
+## 2-2. 實作：對測試行程送訊號（勿對系統服務亂殺）
+### 2-2-1 ~ 2-2-2
+<img width="849" height="382" alt="image" src="https://github.com/user-attachments/assets/ebd5e150-6526-40aa-95c2-f61187213130" />
+結果:  
+檢查項目	|實際結果|	判定
+---|---|---
+kill -l TERM|	15	|正確
+kill -l KILL	|9|	正確
+sleep 600 &	|背景工作 [1] 5922|	成功
+TEST_PID=$!	|5922	|正確取得 PID
+ps	|PID 5922，PPID 2829，STAT S|	正常
+pgrep|	5922 sleep 600	|PID 一致
+kill -TERM "$TEST_PID"	|顯示 Terminated|	成功
+ps -p "$TEST_PID"|	只有表頭，沒有行程	|已結束
+wait、jobs	|沒有剩餘背景工作	|完成
