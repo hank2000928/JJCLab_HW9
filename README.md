@@ -209,8 +209,10 @@ renice|	修改現有行程的 nice 值
 ### 2-4-5 ~ 2-4-6
 <img width="839" height="145" alt="image" src="https://github.com/user-attachments/assets/a24b6598-5f57-4cd9-8d6d-11c486518306" />
 先用 jobs -p %1 找到 PID，再使用 kill -TERM PID 嘗試正常終止。只有在行程無法正常結束、且已確認目標正確時，才考慮 kill -9 PID。  
-使用 ps -p PID 確認行程已不存在，並使用 jobs 確認 Shell 不再保留該工作。  
+使用 ps -p PID 確認行程已不存在，並使用 jobs 確認 Shell 不再保留該工作。 
+
 ------------------------------
+
 # 練習 3. lsof：誰握著檔案、埠與目錄
 ## 3-1. 概念
 ### 3-1-1 什麼是 File Descriptor（FD）？
