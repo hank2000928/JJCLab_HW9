@@ -214,9 +214,13 @@ renice|	修改現有行程的 nice 值
 ------------------------------
 
 # 練習 3. lsof：誰握著檔案、埠與目錄
+
 ## 3-1. 概念
+
 ### 3-1-1 什麼是 File Descriptor（FD）？
+
 File Descriptor 是 Linux Kernel 為行程提供的檔案描述符，用來識別行程已開啟的檔案、socket、pipe 等資源。每個行程有自己的 FD 表:  
+
 FD	|名稱	|用途
 ---|---|---
 0	|stdin	|標準輸入
