@@ -274,6 +274,7 @@ mem	|Memory-mapped file，記憶體映射檔案
 <img width="851" height="396" alt="image" src="https://github.com/user-attachments/assets/8a12d24e-2fc4-4114-aa07-a8ff941c2183" />
 <img width="831" height="608" alt="image" src="https://github.com/user-attachments/assets/4d863539-ddc5-4fbf-bae8-7cdbd781e9c8" />
 <img width="846" height="557" alt="image" src="https://github.com/user-attachments/assets/00e3d32c-7ceb-48b1-8b77-6da853c9a663" />
+
 ## 3-3. 排查情境
 
 情境	|問題	|核心工具
