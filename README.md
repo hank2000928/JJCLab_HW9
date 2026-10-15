@@ -264,3 +264,19 @@ mem	|Memory-mapped file，記憶體映射檔案
 3-2-6	|依命令名稱過濾 nginx	|sudo lsof -c nginx
 3-2-7	|依 PID 過濾	|sudo lsof -p 1847
 3-2-8	|遞迴查看目錄	|sudo lsof +D /var/log
+
+## 3-2 實作
+<img width="840" height="309" alt="image" src="https://github.com/user-attachments/assets/ecd1096f-2756-46c0-81d7-2430d429cab1" />
+比較 lsof 與 ps 的 PID，結果一致，表示不只找到了 SSH 行程，也確認這個行程確實持有網路監聽 socket。  
+
+<img width="846" height="90" alt="image" src="https://github.com/user-attachments/assets/39993730-024f-4ece-aa83-a33f3de7f57c" />
+<img width="844" height="579" alt="image" src="https://github.com/user-attachments/assets/98c4ea4a-8ad1-4ee4-9738-ba83a2369cac" />
+<img width="851" height="396" alt="image" src="https://github.com/user-attachments/assets/8a12d24e-2fc4-4114-aa07-a8ff941c2183" />
+<img width="831" height="608" alt="image" src="https://github.com/user-attachments/assets/4d863539-ddc5-4fbf-bae8-7cdbd781e9c8" />
+<img width="846" height="557" alt="image" src="https://github.com/user-attachments/assets/00e3d32c-7ceb-48b1-8b77-6da853c9a663" />
+## 3-3. 排查情境
+情境	|問題	|核心工具
+---|---|---
+3-3-1	|埠被占用（Address already in use）|	lsof -i
+3-3-2	|檔案系統無法卸載（umount failed）	|lsof +D
+3-3-3	|某服務開啟了哪些檔案與連線	|lsof -p、lsof -i
